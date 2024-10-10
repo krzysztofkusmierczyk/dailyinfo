@@ -3,13 +3,17 @@ use serde::Serialize;
 pub struct SlackWebhookUrl(String);
 
 impl SlackWebhookUrl {
+    pub fn new(url: String) -> Self {
+        Self(url)
+    }
+
     pub fn as_str(&self) -> &str {
         &self.0
     }
 }
 
 #[derive(Serialize, Debug)]
-struct Field {
+pub struct Field {
     pub title: String,
     pub value: String,
 }
