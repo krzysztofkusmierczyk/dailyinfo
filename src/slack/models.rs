@@ -13,46 +13,100 @@ impl SlackWebhookUrl {
 }
 
 #[derive(Serialize, Debug)]
-pub struct Field {
-    pub title: String,
-    pub value: String,
+pub enum TextType {
+    #[serde(rename = "mrkdwn")]
+    Mrkdwn,
+    #[serde(rename = "plain_text")]
+    PlainText,
 }
 
-impl Field {
-    pub fn new(title: String, value: String) -> Self {
-        Self { title, value }
+#[derive(Serialize, Debug)]
+pub struct TextObject {
+    #[serde(rename = "type")]
+    pub object_type: TextType,
+    pub text: String,
+}
+
+impl TextObject {
+    pub fn plain(text: String) -> Self {
+        Self {
+            object_type: TextType::PlainText,
+            text,
+        }
+    }
+
+    pub fn markdown(text: String) -> Self {
+        Self {
+            object_type: TextType::Mrkdwn,
+            text,
+        }
     }
 }
 
 #[derive(Serialize, Debug)]
-pub struct Attachment {
-    pub text: String,
-    pub fields: Vec<Field>,
-}
-
-impl Attachment {
-    pub fn new(text: String, fields: Vec<Field>) -> Self {
-        Self { text, fields }
-    }
+#[serde(tag = "type", content = "text")]
+pub enum Block {
+    #[serde(rename = "header")]
+    Header(TextObject),
 }
 
 #[derive(Serialize, Debug, Default)]
 pub struct Message {
-    pub attachments: Vec<Attachment>,
+    pub text: String,
+    pub blocks: Option<Vec<Block>>,
 }
 
 impl Message {
-    pub fn with_attachment(attachment: Attachment) -> Self {
-        Self {
-            attachments: vec![attachment],
+    pub fn new(text: String) -> Self {
+        Self { text, blocks: None }
+    }
+
+    pub fn with_blocks(mut self, blocks: Vec<Block>) -> Message {
+        self.blocks = Some(blocks);
+        self
+    }
+
+    pub fn push_block(mut self, block: Block) {
+        match self.blocks {
+            Some(mut bl) => bl.push(block),
+            None => self.blocks = Some(vec![block]),
         }
     }
+}
 
-    pub fn with_attachments(attachments: Vec<Attachment>) -> Message {
-        return Message { attachments };
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+    use serde_json;
+
+    #[test]
+    fn serializes_plain_text_object() {
+        let text_object = TextObject::plain("Test text".to_string());
+
+        let result = serde_json::to_string(&text_object);
+        assert_eq!(
+            result.unwrap(),
+            r#"{"type":"plain_text","text":"Test text"}"#
+        );
     }
 
-    pub fn add_attachment(&mut self, attachment: Attachment) {
-        self.attachments.push(attachment);
+    #[test]
+    fn serializes_mrkdwn_text_object() {
+        let text_object = TextObject::markdown("Test text".to_string());
+
+        let result = serde_json::to_string(&text_object);
+        assert_eq!(result.unwrap(), r#"{"type":"mrkdwn","text":"Test text"}"#);
+    }
+
+    #[test]
+    fn serializes_header_block() {
+        let header_block = Block::Header(TextObject::plain("Test text".to_string()));
+
+        let result = serde_json::to_string(&header_block);
+        assert_eq!(
+            result.unwrap(),
+            r#"{"type":"header","text":{"type":"plain_text","text":"Test text"}}"#
+        );
     }
 }
