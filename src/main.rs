@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use dotenvy::dotenv;
 use slack::{Block, Message, SlackWebhookClient, SlackWebhookUrl, TextObject, TextType};
 use std::env;
