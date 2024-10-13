@@ -91,13 +91,16 @@ pub enum Block {
 
 #[derive(Serialize, Debug, Default)]
 pub struct Message {
-    pub text: String,
+    pub text: Option<String>,
     pub blocks: Option<Vec<Block>>,
 }
 
 impl Message {
     pub fn new(text: String) -> Self {
-        Self { text, blocks: None }
+        Self {
+            text: Some(text),
+            blocks: None,
+        }
     }
 
     pub fn with_blocks(&mut self, blocks: Vec<Block>) {
@@ -109,6 +112,11 @@ impl Message {
             Some(bl) => bl.push(block),
             None => self.blocks = Some(vec![block]),
         }
+    }
+
+    pub fn with_block(&mut self, block: Block) -> &mut Self {
+        self.push_block(block);
+        self
     }
 }
 
