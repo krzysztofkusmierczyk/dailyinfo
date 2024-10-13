@@ -100,14 +100,13 @@ impl Message {
         Self { text, blocks: None }
     }
 
-    pub fn with_blocks(mut self, blocks: Vec<Block>) -> Message {
+    pub fn with_blocks(&mut self, blocks: Vec<Block>) {
         self.blocks = Some(blocks);
-        self
     }
 
-    pub fn push_block(mut self, block: Block) {
-        match self.blocks {
-            Some(mut bl) => bl.push(block),
+    pub fn push_block(&mut self, block: Block) {
+        match &mut self.blocks {
+            Some(bl) => bl.push(block),
             None => self.blocks = Some(vec![block]),
         }
     }
@@ -185,6 +184,29 @@ mod tests {
         assert_eq!(
             result.unwrap(),
             r#"{"type":"section","fields":[{"type":"plain_text","text":"Test text"}]}"#
+        );
+    }
+    #[test]
+    fn serializes_comples_message() {
+        let mut message = Message::new("Notification text".to_owned());
+        message.push_block(Block::Header(HeaderBlock::with_text(TextObject::plain(
+            "Headet text".to_owned(),
+        ))));
+        message.push_block(Block::Divider);
+        message.push_block(Block::Section(SectionBlock::with_text(
+            TextObject::markdown("Markdown text\nand another!".to_owned()),
+        )));
+        message.push_block(Block::Divider);
+        message.push_block(Block::Section(SectionBlock::with_fields(vec![
+            TextObject::markdown("*Title:*\nText".to_owned()),
+            TextObject::markdown("*Title 2:*\nText 2".to_owned()),
+        ])));
+
+        let result = serde_json::to_string(&message);
+
+        assert_eq!(
+            result.unwrap(),
+            r#"{"text":"Notification text","blocks":[{"type":"header","text":{"type":"plain_text","text":"Headet text"}},{"type":"divider"},{"type":"section","text":{"type":"mrkdwn","text":"Markdown text\nand another!"}},{"type":"divider"},{"type":"section","fields":[{"type":"mrkdwn","text":"*Title:*\nText"},{"type":"mrkdwn","text":"*Title 2:*\nText 2"}]}]}"#
         );
     }
 }

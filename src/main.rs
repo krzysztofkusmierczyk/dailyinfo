@@ -12,8 +12,9 @@ fn main() {
     let webhook_url = env::var("SLACK_WEBHOOK").expect("SLACK_WEBHOOK not set");
 
     let client = SlackWebhookClient::new(SlackWebhookUrl::new(webhook_url));
-    let message = Message::new("Test".to_owned()).with_blocks(vec![Block::Header(
-        HeaderBlock::with_text(TextObject::plain("test text :crab:".to_string())),
-    )]);
+    let mut message = Message::new("Test".to_owned());
+    message.with_blocks(vec![Block::Header(HeaderBlock::with_text(
+        TextObject::plain("test text :crab:".to_string()),
+    ))]);
     client.send(&message).expect("Could not send slack message");
 }
