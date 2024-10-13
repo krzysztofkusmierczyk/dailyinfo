@@ -28,17 +28,17 @@ pub struct TextObject {
 }
 
 impl TextObject {
-    pub fn plain(text: String) -> Self {
+    pub fn plain<S: Into<String>>(text: S) -> Self {
         Self {
             object_type: TextType::PlainText,
-            text,
+            text: text.into(),
         }
     }
 
-    pub fn markdown(text: String) -> Self {
+    pub fn markdown<S: Into<String>>(text: S) -> Self {
         Self {
             object_type: TextType::Mrkdwn,
-            text,
+            text: text.into(),
         }
     }
 }

@@ -1,6 +1,7 @@
 #![allow(dead_code)]
+use chrono::Utc;
 use dotenvy::dotenv;
-use providers::greeter::greet;
+use providers::{calendar::get_calendar_day, greeter::greet};
 use slack::{
     Block, HeaderBlock, Message, SectionBlock, SlackWebhookClient, SlackWebhookUrl, TextObject,
 };
@@ -13,6 +14,9 @@ fn main() {
 
     let webhook_url = env::var("SLACK_WEBHOOK").expect("SLACK_WEBHOOK not set");
 
+    let calendar_day =
+        get_calendar_day(Utc::now().date_naive()).expect("Could not load calendar day information");
+
     let client = SlackWebhookClient::new(SlackWebhookUrl::new(webhook_url));
     let mut message = Message::default();
     message
@@ -21,7 +25,10 @@ fn main() {
         ))))
         .with_block(Block::Divider)
         .with_block(Block::Section(SectionBlock::with_text(
-            TextObject::markdown("Markdown text\nand another!".to_owned()),
+            TextObject::markdown("*Dziś imieniny obchodzą:*"),
+        )))
+        .with_block(Block::Section(SectionBlock::with_text(
+            TextObject::markdown(calendar_day.name_days.join(", ")),
         )))
         .with_block(Block::Divider)
         .with_block(Block::Section(SectionBlock::with_fields(vec![
