@@ -1,6 +1,8 @@
 #![allow(dead_code)]
 use dotenvy::dotenv;
-use slack::{Block, Message, SlackWebhookClient, SlackWebhookUrl, TextObject, TextType};
+use slack::{
+    Block, HeaderBlock, Message, SlackWebhookClient, SlackWebhookUrl, TextObject, TextType,
+};
 use std::env;
 mod slack;
 
@@ -11,7 +13,7 @@ fn main() {
 
     let client = SlackWebhookClient::new(SlackWebhookUrl::new(webhook_url));
     let message = Message::new("Test".to_owned()).with_blocks(vec![Block::Header(
-        TextObject::plain("test text :crab:".to_string()),
+        HeaderBlock::with_text(TextObject::plain("test text :crab:".to_string())),
     )]);
     client.send(&message).expect("Could not send slack message");
 }

@@ -44,10 +44,49 @@ impl TextObject {
 }
 
 #[derive(Serialize, Debug)]
-#[serde(tag = "type", content = "text")]
+pub struct HeaderBlock {
+    text: TextObject,
+}
+
+impl HeaderBlock {
+    pub fn with_text(text: TextObject) -> Self {
+        Self { text }
+    }
+}
+
+#[derive(Serialize, Debug)]
+pub struct SectionBlock {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    text: Option<TextObject>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    fields: Option<Vec<TextObject>>,
+}
+
+impl SectionBlock {
+    pub fn with_text(text: TextObject) -> Self {
+        Self {
+            text: Some(text),
+            fields: None,
+        }
+    }
+
+    pub fn with_fields(fields: Vec<TextObject>) -> Self {
+        Self {
+            text: None,
+            fields: Some(fields),
+        }
+    }
+}
+
+#[derive(Serialize, Debug)]
+#[serde(tag = "type")]
 pub enum Block {
     #[serde(rename = "header")]
-    Header(TextObject),
+    Header(HeaderBlock),
+    #[serde(rename = "divider")]
+    Divider,
+    #[serde(rename = "section")]
+    Section(SectionBlock),
 }
 
 #[derive(Serialize, Debug, Default)]
@@ -101,12 +140,51 @@ mod tests {
 
     #[test]
     fn serializes_header_block() {
-        let header_block = Block::Header(TextObject::plain("Test text".to_string()));
+        let header_block = Block::Header(HeaderBlock::with_text(TextObject::plain(
+            "Test text".to_string(),
+        )));
 
         let result = serde_json::to_string(&header_block);
         assert_eq!(
             result.unwrap(),
             r#"{"type":"header","text":{"type":"plain_text","text":"Test text"}}"#
+        );
+    }
+
+    #[test]
+    fn serializes_divider_block() {
+        let divider_block = Block::Divider;
+
+        let result = serde_json::to_string(&divider_block);
+
+        assert_eq!(result.unwrap(), r#"{"type":"divider"}"#);
+    }
+
+    #[test]
+    fn serializes_section_block_with_text() {
+        let section = Block::Section(SectionBlock::with_text(TextObject::plain(
+            "Test text".to_owned(),
+        )));
+
+        let result = serde_json::to_string(&section);
+
+        assert_eq!(
+            result.unwrap(),
+            r#"{"type":"section","text":{"type":"plain_text","text":"Test text"}}"#
+        );
+    }
+
+    #[test]
+    fn serializes_section_block_with_fields() {
+        let section = Block::Section(SectionBlock::with_fields(vec![TextObject::plain(
+            "Test text".to_owned(),
+        )]));
+
+        let result = serde_json::to_string(&section);
+
+        assert_eq!(
+            result.unwrap(),
+            r#"{"type":"section","fields":[{"type":"plain_text","text":"Test text"}]}"#
         );
     }
 }
