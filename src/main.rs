@@ -29,11 +29,6 @@ fn main() {
         )))
         .with_block(Block::Section(SectionBlock::with_text(
             TextObject::markdown(calendar_day.name_days.join(", ")),
-        )))
-        .with_block(Block::Divider)
-        .with_block(Block::Section(SectionBlock::with_fields(vec![
-            TextObject::markdown("*Title:*\nText".to_owned()),
-            TextObject::markdown("*Title 2:*\nText 2".to_owned()),
-        ])));
+        )));
     client.send(&message).expect("Could not send slack message");
 }
