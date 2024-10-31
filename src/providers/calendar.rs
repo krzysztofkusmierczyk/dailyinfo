@@ -24,16 +24,40 @@ pub fn get_calendar_day(at: NaiveDate) -> Result<CalendarDay> {
     let response = ureq::post("https://www.kalbi.pl/search").send_form(&form)?;
     let html: String = response.into_string()?;
     let document = Html::parse_document(&html);
+
     // Parse names
-    let name_selector = Selector::parse(".calCard-name-day a").expect("Invalid selector");
+    let name_selector =
+        Selector::parse(".calCard-name-day a").expect("Invalid selector for name day.");
 
     let names: Vec<String> = document
         .select(&name_selector)
         .map(|el| el.text().collect())
         .collect();
+
     // Parse festivities
+    let main_festivity_selector =
+        Selector::parse(".calCard-fete a").expect("Invalid selector for main festivity ");
+
+    let main_festivities: Vec<String> = document
+        .select(&main_festivity_selector)
+        .map(|el| el.text().collect())
+        .collect();
+
+    let other_festivities_selector =
+        Selector::parse(".calCard-ententa a").expect("Invalid selector for festivities");
+
+    let other_fesitvities: Vec<String> = document
+        .select(&other_festivities_selector)
+        .map(|el| el.text().collect())
+        .collect();
+
+    let all_festivities: Vec<String> = main_festivities
+        .into_iter()
+        .chain(other_fesitvities.into_iter())
+        .collect();
+
     Ok(CalendarDay {
         name_days: names,
-        festivities: vec![],
+        festivities: all_festivities,
     })
 }
