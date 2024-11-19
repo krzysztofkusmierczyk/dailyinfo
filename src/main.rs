@@ -35,7 +35,14 @@ fn main() {
             TextObject::markdown("*Święta*"),
         )))
         .with_block(Block::Section(SectionBlock::with_text(
-            TextObject::markdown(calendar_day.festivities.join("\n")),
+            TextObject::markdown(
+                calendar_day
+                    .festivities
+                    .into_iter()
+                    .map(|f| format!("- {}", f))
+                    .collect::<Vec<_>>()
+                    .join("\n"),
+            ),
         )));
     client.send(&message).expect("Could not send slack message");
 }
