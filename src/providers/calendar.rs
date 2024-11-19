@@ -41,6 +41,7 @@ pub fn get_calendar_day(at: NaiveDate) -> Result<CalendarDay> {
     let main_festivities: Vec<String> = document
         .select(&main_festivity_selector)
         .map(|el| el.text().collect())
+        .map(|s: String| s.trim().to_string())
         .collect();
 
     let other_festivities_selector =
@@ -49,6 +50,7 @@ pub fn get_calendar_day(at: NaiveDate) -> Result<CalendarDay> {
     let other_fesitvities: Vec<String> = document
         .select(&other_festivities_selector)
         .map(|el| el.text().collect())
+        .map(|s: String| s.trim().to_string())
         .collect();
 
     let all_festivities: Vec<String> = main_festivities
