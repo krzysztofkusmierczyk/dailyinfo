@@ -3,10 +3,11 @@ use crate::providers::{calendar::get_calendar_day, greeter::greet};
 use crate::slack::{
     Block, HeaderBlock, Message, SectionBlock, SlackWebhookClient, SlackWebhookUrl, TextObject,
 };
-use chrono::Utc;
-pub fn send_message<S: Into<String>>(webhook_url: S) {
-    let calendar_day =
-        get_calendar_day(Utc::now().date_naive()).expect("Could not load calendar day information");
+use chrono::{NaiveDate, Utc};
+pub fn send_message<S: Into<String>>(webhook_url: S, for_date: Option<NaiveDate>) {
+    let date: NaiveDate = for_date.unwrap_or_else(|| Utc::now().date_naive());
+
+    let calendar_day = get_calendar_day(date).expect("Could not load calendar day information");
 
     let client = SlackWebhookClient::new(SlackWebhookUrl::new(webhook_url));
     let mut message = Message::default();
