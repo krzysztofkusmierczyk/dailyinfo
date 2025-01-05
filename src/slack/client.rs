@@ -13,6 +13,7 @@ impl SlackWebhookClient {
 
     pub fn send(self, message: &Message) -> Result<()> {
         ureq::post(self.url.as_str()).send_json(message)?;
+        //TODO: Parse error message into something readable
 
         Ok(())
     }

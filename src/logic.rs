@@ -25,8 +25,10 @@ pub fn send_message<S: Into<String>>(webhook_url: S, for_date: Option<NaiveDate>
         .with_block(Block::Divider)
         .with_block(Block::Section(SectionBlock::with_text(
             TextObject::markdown("*Święta*"),
-        )))
-        .with_block(Block::Section(SectionBlock::with_text(
+        )));
+
+    if calendar_day.festivities.len() > 0 {
+        message.with_block(Block::Section(SectionBlock::with_text(
             TextObject::markdown(
                 calendar_day
                     .festivities
@@ -36,5 +38,11 @@ pub fn send_message<S: Into<String>>(webhook_url: S, for_date: Option<NaiveDate>
                     .join("\n"),
             ),
         )));
+    } else {
+        message.with_block(Block::Section(SectionBlock::with_text(
+            TextObject::markdown("Brak :scream:"),
+        )));
+    }
+
     client.send(&message).expect("Could not send slack message");
 }
