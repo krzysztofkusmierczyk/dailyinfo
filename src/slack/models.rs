@@ -3,8 +3,8 @@ use serde::Serialize;
 pub struct SlackWebhookUrl(String);
 
 impl SlackWebhookUrl {
-    pub fn new(url: String) -> Self {
-        Self(url)
+    pub fn new<S: Into<String>>(url: S) -> Self {
+        Self(url.into())
     }
 
     pub fn as_str(&self) -> &str {
